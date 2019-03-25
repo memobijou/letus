@@ -25,7 +25,7 @@ SECRET_KEY = 'xaiv(+zgkjh@bd%vco!n8y29ng4$8saxd*&lm75ylo-6o4a46u'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["letus-staging.herokuapp.com"]
 
 
 # Application definition
