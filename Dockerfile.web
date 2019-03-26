@@ -4,7 +4,7 @@ FROM python:3.6.3
 # Set the working directory to /letus
 WORKDIR /letus
 
-# Copy the current directory contents into the container at /clinic-app
+# Copy the current directory contents into the container at /letus
 COPY . /letus
 
 # Install any needed packages specified in requirements.txt
@@ -17,4 +17,4 @@ EXPOSE 80
 ENV NAME World
 
 # Run app.py when the container launches
-CMD python manage.py runserver 0.0.0.0:$PORT
+#CMD python manage.py runserver 0.0.0.0:$PORT
