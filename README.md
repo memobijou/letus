@@ -6,7 +6,9 @@
 Environment variables:
 
 Production:
+
 DJANGO_SETTINGS_MODULE=letus.settings.production.settings
 
 Staging:
+
 DJANGO_SETTINGS_MODULE=letus.settings.staging.settings
