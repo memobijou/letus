@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'offer',
     "member",
+    "suggestion",
 ]
 
 MIDDLEWARE = [
