@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from member.serializers import MemberSerializer
-from offer.models import Offer
+from offer.models import Offer, MemberOffer
 
 
 class BaseOfferSerializer(serializers.ModelSerializer):
@@ -15,3 +15,9 @@ class ReadOnlyOfferSerializer(BaseOfferSerializer):
 
 class OfferSerializer(BaseOfferSerializer):
     pass
+
+
+class MemberOfferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MemberOffer
+        fields = ("pk", "offer", "member", "is_admin", )
