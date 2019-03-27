@@ -4,12 +4,12 @@
 3. Project runs on "127.0.0.1:8000"
 #
 
-# Environment variables:
+# Environment variables
 
-# Production:
+ Production
 
 DJANGO_SETTINGS_MODULE=letus.settings.production.settings
 
-# Staging:
+ Staging
 
 DJANGO_SETTINGS_MODULE=letus.settings.staging.settings
