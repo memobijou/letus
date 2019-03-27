@@ -21,4 +21,4 @@ class ReadOnlyOfferSerializer(BaseOfferSerializer):
 
 
 class OfferSerializer(BaseOfferSerializer):
-    pass
+    members_offers = MemberOfferSerializer(many=True, read_only=True)
