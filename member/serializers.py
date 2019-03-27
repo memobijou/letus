@@ -37,8 +37,8 @@ class MemberSerializer(serializers.ModelSerializer):
         return data
 
     def validate_username_uniqueness(self, username):
-        unique_users = User.objects.filter(username=username)
+        username_users = User.objects.filter(username=username)
         if self.instance:
-            unique_users = unique_users.exclude(member__pk=self.instance.pk).count()
-        if unique_users > 0:
+            username_users = username_users.exclude(member__pk=self.instance.pk)
+        if username_users.count() > 0:
             raise serializers.ValidationError("Dieser Benutzername existiert bereits.")
