@@ -4,7 +4,8 @@ from abc import ABCMeta, abstractmethod
 from rest_framework.pagination import LimitOffsetPagination
 
 from offer.models import Offer, MemberOffer
-from offer.serializers import OfferSerializer, ReadOnlyOfferSerializer, MemberOfferSerializer
+from offer.serializers import OfferSerializer, ReadOnlyOfferSerializer, MemberOfferSerializer, \
+    ReadOnlyMemberOfferSerializer
 
 
 class BaseOfferViewset(metaclass=ABCMeta):
@@ -29,4 +30,10 @@ class ReadOnlyOfferViewset(BaseOfferViewset, viewsets.ReadOnlyModelViewSet):
 class MemberOfferViewset(viewsets.ModelViewSet):
     queryset = MemberOffer.objects.all()
     serializer_class = MemberOfferSerializer
+    pagination_class = LimitOffsetPagination
+
+
+class ReadOnlyMemberOfferViewset(viewsets.ReadOnlyModelViewSet):
+    queryset = MemberOffer.objects.all()
+    serializer_class = ReadOnlyMemberOfferSerializer
     pagination_class = LimitOffsetPagination
