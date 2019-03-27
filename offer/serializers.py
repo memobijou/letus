@@ -1,12 +1,15 @@
 from rest_framework import serializers
 from member.serializers import MemberSerializer
 from offer.models import Offer, MemberOffer
+from suggestion.serializers import SuggestionSerializer
 
 
 class MemberOfferSerializer(serializers.ModelSerializer):
+    suggestions = SuggestionSerializer(many=True, read_only=True)
+
     class Meta:
         model = MemberOffer
-        fields = ("pk", "offer", "member", "is_admin", )
+        fields = ("pk", "offer", "member", "is_admin", "suggestions", )
 
 
 class BaseOfferSerializer(serializers.ModelSerializer):
