@@ -7,7 +7,7 @@ from member.models import Member
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "username", "email")
+        fields = ("pk", "first_name", "last_name", "username", "email")
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -20,3 +20,7 @@ class MemberSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create(**validated_data.get("user"))
         return user.member
+
+    def update(self, instance, validated_data):
+        User.objects.filter(pk=instance.user_id).update(**validated_data.get('user'))
+        return instance
