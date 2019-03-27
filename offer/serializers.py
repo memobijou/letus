@@ -6,7 +6,7 @@ from offer.models import Offer
 class BaseOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = ("title", "sub_title", "organizer")
+        fields = ("title", "sub_title", "organizer", "is_finished", "is_canceled",)
 
 
 class ReadOnlyOfferSerializer(BaseOfferSerializer):
