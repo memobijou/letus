@@ -1,3 +1,4 @@
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -8,6 +9,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("pk", "first_name", "last_name", "username", "email")
+        extra_kwargs = {
+            'username': {
+                'validators': [UnicodeUsernameValidator()],
+            }
+        }
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -24,3 +30,15 @@ class MemberSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         User.objects.filter(pk=instance.user_id).update(**validated_data.get('user'))
         return instance
+
+    def validate(self, data):
+        username = data.get('user').get('username')
+        self.validate_username_uniqueness(username)
+        return data
+
+    def validate_username_uniqueness(self, username):
+        unique_users = User.objects.filter(username=username)
+        if self.instance:
+            unique_users = unique_users.exclude(member__pk=self.instance.pk).count()
+        if unique_users > 0:
+            raise serializers.ValidationError("Dieser Benutzername existiert bereits.")
