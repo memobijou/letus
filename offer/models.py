@@ -19,3 +19,4 @@ class MemberOffer(models.Model):
         "member.Member", null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Mitglied",
         related_name="members_offers")
     is_admin = models.NullBooleanField(blank=True, verbose_name="Administrator")
+    is_member = models.NullBooleanField(blank=True, verbose_name="Mitglied")
