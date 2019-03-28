@@ -59,10 +59,10 @@ class CreateOfferSerializer(BaseOfferSerializer):
         member_ids = self.context.get("members")
 
         organizer_member_offer_serializer = MemberOfferSerializer(
-            data={"member": organizer.pk, "offer": instance.pk, "is_admin": True})
+            data={"member": organizer.pk, "offer": instance.pk, "is_admin": True, "is_member": True})
 
         members_member_offer_serializers = [
-            MemberOfferSerializer(data={"member": member_id, "offer": instance.pk}) for member_id in member_ids
+            MemberOfferSerializer(data={"member": member_id, "offer": instance.pk, "is_member": True}) for member_id in member_ids
         ]
 
         errors = {}
