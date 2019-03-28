@@ -43,6 +43,15 @@ class ReadOnlyMemberOfferViewset(viewsets.ReadOnlyModelViewSet):
 
 class OfferAPIView(APIView):
     def post(self, request, format=None):
+        # title=creed&sub_title=apollo&organizer=1&member=2&datetime_from=2019-03-28T13:30&datetime_to=2019-03-28T13:30
+
+        """
+        get:
+        A description of the get method on the custom action.
+
+        post:
+        paramters title, sub_title, organizer, member(many=True), datetime_from(many=True), datetime_to(many=True)
+        """
         members = request.data.getlist("member")
 
         datetimes_from = request.data.getlist("datetime_from")

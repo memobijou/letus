@@ -49,7 +49,6 @@ class CreateOfferSerializer(BaseOfferSerializer):
     members_offers = MemberOfferSerializer(many=True, read_only=True)
 
     def create(self, validated_data):
-        # title=creed&sub_title=apollo&organizer=1&member=2&datetime_from=2019-03-28T13:30&datetime_to=2019-03-28T13:30
         instance = Offer.objects.create(**validated_data)
 
         organizer = self.validated_data.get("organizer")
