@@ -50,7 +50,7 @@ class OfferAPIView(APIView):
         A description of the get method on the custom action.
 
         post:
-        paramters title, sub_title, organizer, member(many=True), datetime_from(many=True), datetime_to(many=True)
+        parameters title, sub_title, organizer, member(many=True), datetime_from(many=True), datetime_to(many=True)
         """
         members = request.data.getlist("member")
 
