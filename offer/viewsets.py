@@ -1,5 +1,7 @@
-from rest_framework import viewsets, serializers
+from rest_framework import viewsets, serializers, mixins
 from abc import ABCMeta, abstractmethod
+
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.views import APIView
@@ -41,17 +43,12 @@ class ReadOnlyMemberOfferViewset(viewsets.ReadOnlyModelViewSet):
     pagination_class = LimitOffsetPagination
 
 
-class OfferAPIView(APIView):
+class OLDOfferAPIView(APIView):
+    @staticmethod
+    def get_serializer():
+        return CreateOfferSerializer()
+
     def post(self, request, format=None):
-        # title=creed&sub_title=apollo&organizer=1&member=2&datetime_from=2019-03-28T13:30&datetime_to=2019-03-28T13:30
-
-        """
-        get:
-        A description of the get method on the custom action.
-
-        post:
-        parameters title, sub_title, organizer, member(many=True), datetime_from(many=True), datetime_to(many=True)
-        """
         members = request.data.getlist("member")
 
         datetimes_from = request.data.getlist("datetime_from")
@@ -65,3 +62,14 @@ class OfferAPIView(APIView):
             offer_serializer.save()
             return Response(offer_serializer.data, status=status.HTTP_201_CREATED)
         return Response(offer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OfferAPIView(mixins.CreateModelMixin, mixins.ListModelMixin, GenericAPIView):
+    queryset = Offer.objects.all()
+    serializer_class = CreateOfferSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
