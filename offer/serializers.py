@@ -2,14 +2,7 @@ from rest_framework import serializers
 from member.serializers import MemberSerializer
 from offer.models import Offer, MemberOffer
 from suggestion.serializers import SuggestionSerializer
-
-
-class MemberOfferSerializer(serializers.ModelSerializer):
-    suggestions = SuggestionSerializer(many=True)
-
-    class Meta:
-        model = MemberOffer
-        fields = ("pk", "offer", "member", "is_admin", "suggestions", )
+from django.db import transaction
 
 
 class MinimalOfferSerializer(serializers.ModelSerializer):
@@ -20,14 +13,50 @@ class MinimalOfferSerializer(serializers.ModelSerializer):
         fields = ("pk", "title", "sub_title", "organizer", "is_finished", "is_canceled", )
 
 
+class MemberOfferSerializer(serializers.ModelSerializer):
+    suggestions = SuggestionSerializer(many=True)
+
+    class Meta:
+        model = MemberOffer
+        fields = ("pk", "offer", "member", "is_admin", "suggestions", )
+
+
 class BaseOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         fields = ("title", "sub_title", "organizer", "is_finished", "is_canceled", "members_offers", )
 
 
+class SuggestionsField(serializers.Field):
+    def to_internal_value(self, data):
+        return data
+
+    def to_representation(self, value):
+        return value
+
+
 class OfferSerializer(BaseOfferSerializer):
     members_offers = MemberOfferSerializer(many=True)
+    suggestions = SuggestionsField(initial=[], write_only=True,
+                                   help_text='[{"datetime_from": ..., "datetime_to": ...}, ...]')
+
+    class Meta(BaseOfferSerializer.Meta):
+        fields = BaseOfferSerializer.Meta.fields + ('suggestions',)
+
+    @transaction.atomic
+    def create(self, validated_data):
+        members_offers = validated_data.pop("members_offers")
+        print(members_offers)
+        suggestions = validated_data.pop("suggestions")
+        print(suggestions)
+        instance = Offer.objects.create(**validated_data)
+
+        return instance
+
+    @staticmethod
+    def validate_suggestions(data):
+        print(f"validated yeah: {data}")
+        return data
 
 
 class CreateOfferSerializer(BaseOfferSerializer):

@@ -7,5 +7,5 @@ router.register("offers", OfferViewset)
 
 urlpatterns = [
     path("", include(router.urls),),
-    path("create-offers", OfferAPIView.as_view())
+    path("offers/creation", OfferAPIView.as_view())
 ]
