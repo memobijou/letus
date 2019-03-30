@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from offer.viewsets import OfferViewset, ReadOnlyOfferViewset, MemberOfferViewset, ReadOnlyMemberOfferViewset, \
-    OfferAPIView
+from offer.viewsets import OfferViewset, OfferAPIView
 
 router = DefaultRouter()
 router.register("offers", OfferViewset)

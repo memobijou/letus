@@ -7,8 +7,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.views import APIView
 from rest_framework import status
 from offer.models import Offer, MemberOffer
-from offer.serializers import OfferSerializer, ReadOnlyOfferSerializer, MemberOfferSerializer, \
-    ReadOnlyMemberOfferSerializer, CreateOfferSerializer
+from offer.serializers import OfferSerializer, CreateOfferSerializer
 from suggestion.serializers import SuggestionSerializer
 
 
@@ -25,22 +24,6 @@ class BaseOfferViewset(metaclass=ABCMeta):
 
 class OfferViewset(BaseOfferViewset, viewsets.ModelViewSet):
     serializer_class = OfferSerializer
-
-
-class ReadOnlyOfferViewset(BaseOfferViewset, viewsets.ReadOnlyModelViewSet):
-    serializer_class = ReadOnlyOfferSerializer
-
-
-class MemberOfferViewset(viewsets.ModelViewSet):
-    queryset = MemberOffer.objects.all()
-    serializer_class = MemberOfferSerializer
-    pagination_class = LimitOffsetPagination
-
-
-class ReadOnlyMemberOfferViewset(viewsets.ReadOnlyModelViewSet):
-    queryset = MemberOffer.objects.all()
-    serializer_class = ReadOnlyMemberOfferSerializer
-    pagination_class = LimitOffsetPagination
 
 
 class OfferAPIView(mixins.CreateModelMixin, mixins.ListModelMixin, GenericAPIView):
