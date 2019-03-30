@@ -5,7 +5,7 @@ from suggestion.serializers import SuggestionSerializer
 
 
 class MemberOfferSerializer(serializers.ModelSerializer):
-    suggestions = SuggestionSerializer(many=True, read_only=True)
+    suggestions = SuggestionSerializer(many=True)
 
     class Meta:
         model = MemberOffer
@@ -42,7 +42,7 @@ class ReadOnlyOfferSerializer(BaseOfferSerializer):
 
 
 class OfferSerializer(BaseOfferSerializer):
-    members_offers = MemberOfferSerializer(many=True, read_only=True)
+    members_offers = MemberOfferSerializer(many=True)
 
 
 class CreateOfferSerializer(BaseOfferSerializer):
