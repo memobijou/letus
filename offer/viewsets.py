@@ -43,27 +43,6 @@ class ReadOnlyMemberOfferViewset(viewsets.ReadOnlyModelViewSet):
     pagination_class = LimitOffsetPagination
 
 
-class OLDOfferAPIView(APIView):
-    @staticmethod
-    def get_serializer():
-        return CreateOfferSerializer()
-
-    def post(self, request, format=None):
-        members = request.data.getlist("member")
-
-        datetimes_from = request.data.getlist("datetime_from")
-        datetimes_to = request.data.getlist("datetime_to")
-
-        offer_serializer = CreateOfferSerializer(
-            data=request.data, context={
-                "members": members, "datetimes_from": datetimes_from, "datetimes_to": datetimes_to})
-
-        if offer_serializer.is_valid():
-            offer_serializer.save()
-            return Response(offer_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(offer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class OfferAPIView(mixins.CreateModelMixin, mixins.ListModelMixin, GenericAPIView):
     queryset = Offer.objects.all()
     serializer_class = CreateOfferSerializer
