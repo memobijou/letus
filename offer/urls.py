@@ -5,9 +5,6 @@ from offer.viewsets import OfferViewset, ReadOnlyOfferViewset, MemberOfferViewse
 
 router = DefaultRouter()
 router.register("offers", OfferViewset)
-router.register("read-offers", ReadOnlyOfferViewset)
-router.register("members-offers", MemberOfferViewset)
-router.register("read-members-offers", ReadOnlyMemberOfferViewset)
 
 urlpatterns = [
     path("", include(router.urls),),

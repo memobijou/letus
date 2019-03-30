@@ -45,7 +45,7 @@ class ReadOnlyMemberOfferViewset(viewsets.ReadOnlyModelViewSet):
 
 class OfferAPIView(mixins.CreateModelMixin, mixins.ListModelMixin, GenericAPIView):
     queryset = Offer.objects.all()
-    serializer_class = CreateOfferSerializer
+    serializer_class = OfferSerializer
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
