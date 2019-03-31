@@ -14,9 +14,9 @@ class Offer(models.Model):
 
 class MemberOffer(models.Model):
     offer = models.ForeignKey("offer.Offer", null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Angebot",
-                              related_name="members_offers")
+                              related_name="offer_members")
     member = models.ForeignKey(
         "member.Member", null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Mitglied",
-        related_name="members_offers")
+        related_name="member_offers")
     is_admin = models.NullBooleanField(blank=True, verbose_name="Administrator")
     is_member = models.NullBooleanField(blank=True, verbose_name="Mitglied")
