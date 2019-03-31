@@ -16,6 +16,7 @@ class MinimalOfferSerializer(serializers.ModelSerializer):
 
 class MemberOfferSerializer(serializers.ModelSerializer):
     suggestions = SuggestionSerializer(many=True, required=False)
+    extra_kwargs = {"member": {"allow_null": False}}
 
     class Meta:
         model = MemberOffer
@@ -38,33 +39,36 @@ class OfferSerializer(ModelDocument, BaseOfferSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        print("???????????")
         members_offers = validated_data.pop("members_offers")
         suggestions = validated_data.pop("suggestions")
 
         instance = Offer.objects.create(**validated_data)
 
-        members_offers_serializers = [MemberOfferSerializer(
-            data={"member": instance.organizer.pk, "offer": instance.pk, "is_admin": True})]
-        for member_offer in members_offers:
-            members_offers_serializers.append(MemberOfferSerializer(
-                data={"offer": instance.pk, "is_member": True, "member": member_offer["member"].pk}))
+        organizer_member_offer_serializer = MemberOfferSerializer(
+            data={"member": instance.organizer.pk, "offer": instance.pk, "is_admin": True})
 
-        for members_offers_serializer in members_offers_serializers:
-            if members_offers_serializer.is_valid():
-                members_offers_instance = members_offers_serializer.save()
-                if members_offers_instance.is_admin is True:
-                    for suggestion in suggestions:
-                        suggestion_serializer = SuggestionSerializer(
-                            data={"member_offer": members_offers_instance.pk,
-                                  "datetime_from": suggestion.get("datetime_from", None),
-                                  "datetime_to": suggestion.get("datetime_to", None)})
-                        if suggestion_serializer.is_valid():
-                            suggestion_serializer.save()
-                        else:
-                            raise serializers.ValidationError(suggestion_serializer.errors)
+        if organizer_member_offer_serializer.is_valid():
+            organizer_member_offer_instance = organizer_member_offer_serializer.save()
+
+        for suggestion in suggestions:
+            suggestion_serializer = SuggestionSerializer(
+                data={"member_offer": organizer_member_offer_instance.pk,
+                      "datetime_from": suggestion.get("datetime_from", None),
+                      "datetime_to": suggestion.get("datetime_to", None)})
+            if suggestion_serializer.is_valid():
+                suggestion_serializer.save()
             else:
-                raise serializers.ValidationError(members_offers_serializer.errors)
+                raise serializers.ValidationError(suggestion_serializer.errors)
+
+        for member_offer in members_offers:
+            member = getattr(member_offer.get("member", None), "pk", None)
+            member_offer_serializer = MemberOfferSerializer(
+                data={"offer": instance.pk, "is_member": True, "member": member})
+
+            if member_offer_serializer.is_valid():
+                member_offer_serializer.save()
+            else:
+                raise serializers.ValidationError(member_offer_serializer.errors)
         return instance
 
     @staticmethod
