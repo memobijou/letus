@@ -1,15 +1,9 @@
 from rest_framework import serializers
+from letus.serializers import CustomField, ModelDocument
 from member.serializers import MemberSerializer
 from offer.models import Offer, MemberOffer
 from suggestion.serializers import SuggestionSerializer
-
-
-class MemberOfferSerializer(serializers.ModelSerializer):
-    suggestions = SuggestionSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = MemberOffer
-        fields = ("pk", "offer", "member", "is_admin", "suggestions", )
+from django.db import transaction
 
 
 class MinimalOfferSerializer(serializers.ModelSerializer):
@@ -20,14 +14,12 @@ class MinimalOfferSerializer(serializers.ModelSerializer):
         fields = ("pk", "title", "sub_title", "organizer", "is_finished", "is_canceled", )
 
 
-class ReadOnlyMemberOfferSerializer(serializers.ModelSerializer):
-    suggestions = SuggestionSerializer(many=True, read_only=True)
-    offer = MinimalOfferSerializer()
-    member = MemberSerializer()
+class MemberOfferSerializer(serializers.ModelSerializer):
+    suggestions = SuggestionSerializer(many=True, required=False)
 
     class Meta:
         model = MemberOffer
-        fields = ("pk", "offer", "member", "is_admin", "suggestions", )
+        fields = ("pk", "offer", "member", "is_admin", "is_member", "suggestions", )
 
 
 class BaseOfferSerializer(serializers.ModelSerializer):
@@ -36,13 +28,50 @@ class BaseOfferSerializer(serializers.ModelSerializer):
         fields = ("title", "sub_title", "organizer", "is_finished", "is_canceled", "members_offers", )
 
 
-class ReadOnlyOfferSerializer(BaseOfferSerializer):
-    organizer = MemberSerializer()
+class OfferSerializer(ModelDocument, BaseOfferSerializer):
     members_offers = MemberOfferSerializer(many=True)
+    suggestions = CustomField(initial=[], write_only=True,
+                              help_text='List of dictionaries containing datetime_from and datetime_to')
 
+    class Meta(BaseOfferSerializer.Meta):
+        fields = BaseOfferSerializer.Meta.fields + ('suggestions',)
 
-class OfferSerializer(BaseOfferSerializer):
-    members_offers = MemberOfferSerializer(many=True, read_only=True)
+    @transaction.atomic
+    def create(self, validated_data):
+        print("???????????")
+        members_offers = validated_data.pop("members_offers")
+        suggestions = validated_data.pop("suggestions")
+
+        instance = Offer.objects.create(**validated_data)
+
+        members_offers_serializers = [MemberOfferSerializer(
+            data={"member": instance.organizer.pk, "offer": instance.pk, "is_admin": True})]
+        for member_offer in members_offers:
+            members_offers_serializers.append(MemberOfferSerializer(
+                data={"offer": instance.pk, "is_member": True, "member": member_offer["member"].pk}))
+
+        for members_offers_serializer in members_offers_serializers:
+            if members_offers_serializer.is_valid():
+                members_offers_instance = members_offers_serializer.save()
+                if members_offers_instance.is_admin is True:
+                    for suggestion in suggestions:
+                        suggestion_serializer = SuggestionSerializer(
+                            data={"member_offer": members_offers_instance.pk,
+                                  "datetime_from": suggestion.get("datetime_from", None),
+                                  "datetime_to": suggestion.get("datetime_to", None)})
+                        if suggestion_serializer.is_valid():
+                            suggestion_serializer.save()
+                        else:
+                            raise serializers.ValidationError(suggestion_serializer.errors)
+            else:
+                raise serializers.ValidationError(members_offers_serializer.errors)
+        return instance
+
+    @staticmethod
+    def validate_suggestions(data):
+        if len(data) == 0:
+            raise serializers.ValidationError("You have to make at least one suggestion")
+        return data
 
 
 class CreateOfferSerializer(BaseOfferSerializer):
