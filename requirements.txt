@@ -5,3 +5,4 @@ djangorestframework
 psycopg2
 dj-database-url
 coreapi
+coreschema

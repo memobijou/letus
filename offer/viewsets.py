@@ -1,14 +1,10 @@
-from rest_framework import viewsets, serializers, mixins
+from rest_framework import viewsets, mixins
 from abc import ABCMeta, abstractmethod
 
 from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.views import APIView
-from rest_framework import status
-from offer.models import Offer, MemberOffer
-from offer.serializers import OfferSerializer, CreateOfferSerializer
-from suggestion.serializers import SuggestionSerializer
+from offer.models import Offer
+from offer.serializers import OfferSerializer
 
 
 class BaseOfferViewset(metaclass=ABCMeta):
