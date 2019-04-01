@@ -1,26 +1,24 @@
 from rest_framework import serializers
 from letus.serializers import CustomField, ModelDocument
-from member.serializers import MemberSerializer
 from offer.models import Offer, MemberOffer
 from suggestion.serializers import SuggestionSerializer
 from django.db import transaction
 
 
-class MinimalOfferSerializer(serializers.ModelSerializer):
-    organizer = MemberSerializer()
-
-    class Meta:
-        model = Offer
-        fields = ("pk", "title", "sub_title", "organizer", "is_finished", "is_canceled", )
-
-
-class MemberOfferSerializer(serializers.ModelSerializer):
-    suggestions = SuggestionSerializer(many=True, required=False)
+class BaseMemberOfferSerializer(serializers.ModelSerializer):
     extra_kwargs = {"member": {"allow_null": False}}
 
     class Meta:
         model = MemberOffer
         fields = ("pk", "offer", "member", "is_admin", "is_member", "suggestions", )
+
+
+class MemberOfferSerializer(BaseMemberOfferSerializer):
+    suggestions = SuggestionSerializer(many=True, required=False)
+
+
+class SuggestionMemberOfferSerializer(BaseMemberOfferSerializer):
+    pass
 
 
 class BaseOfferSerializer(serializers.ModelSerializer):
