@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from letus.serializers import CustomField, ModelDocument
 from offer.models import Offer, MemberOffer
-from suggestion.serializers import SuggestionSerializer
+from suggestion.serializers import SuggestionSerializer, MemberSuggestionResponseSerializer
 from django.db import transaction
 
 
@@ -17,7 +17,7 @@ class MemberOfferSerializer(serializers.ModelSerializer):
 class BaseOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = ("title", "sub_title", "organizer", "is_finished", "is_canceled", "offer_members", )
+        fields = ("pk", "title", "sub_title", "organizer", "is_finished", "is_canceled", "offer_members", )
 
 
 class OfferSerializer(ModelDocument, BaseOfferSerializer):
@@ -62,6 +62,8 @@ class OfferSerializer(ModelDocument, BaseOfferSerializer):
                 offer_member_serializer.save()
             else:
                 raise serializers.ValidationError(offer_member_serializer.errors)
+
+            member_suggestion_response_instance = MemberSuggestionResponseSerializer()
         return instance
 
     @staticmethod
