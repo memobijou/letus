@@ -5,20 +5,13 @@ from suggestion.serializers import SuggestionSerializer
 from django.db import transaction
 
 
-class BaseMemberOfferSerializer(serializers.ModelSerializer):
+class MemberOfferSerializer(serializers.ModelSerializer):
+    suggestions = SuggestionSerializer(many=True, required=False)
     extra_kwargs = {"member": {"allow_null": False}}
 
     class Meta:
         model = MemberOffer
         fields = ("pk", "offer", "member", "is_admin", "is_member", "suggestions", )
-
-
-class MemberOfferSerializer(BaseMemberOfferSerializer):
-    suggestions = SuggestionSerializer(many=True, required=False)
-
-
-class SuggestionMemberOfferSerializer(BaseMemberOfferSerializer):
-    pass
 
 
 class BaseOfferSerializer(serializers.ModelSerializer):
