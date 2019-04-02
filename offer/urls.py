@@ -1,7 +1,11 @@
-from django.urls import path
-from offer.viewsets import OfferAPIView
+from django.urls import path, include
+from offer.viewsets import OfferViewSet, OfferSuggestionViewSet
+from rest_framework.routers import DefaultRouter
 
 
-urlpatterns = [
-    path("offers/", OfferAPIView.as_view())
-]
+router = DefaultRouter()
+router.register("offers", OfferViewSet)
+router.register(r"offers/(?P<offer_id>\d+)/suggestions", OfferSuggestionViewSet)
+
+
+urlpatterns = router.urls

@@ -1,7 +1,6 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from django.contrib.auth.models import User
-
 from member.models import Member
 
 
