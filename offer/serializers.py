@@ -1,69 +1,90 @@
 from rest_framework import serializers
 from letus.serializers import CustomField, ModelDocument
+from member.serializers import MemberSerializer
 from offer.models import Offer, MemberOffer
 from suggestion.serializers import SuggestionSerializer, MemberSuggestionResponseSerializer
 from django.db import transaction
 
 
 class MemberOfferSerializer(serializers.ModelSerializer):
-    suggestions = SuggestionSerializer(many=True, required=False)
-    extra_kwargs = {"member": {"allow_null": False}}
+    member = MemberSerializer(read_only=True)
+    member_id = serializers.IntegerField()
+    offer_id = serializers.IntegerField(write_only=True, allow_null=True, required=False)
+    extra_kwargs = {"member_id": {"allow_null": False}}
 
     class Meta:
         model = MemberOffer
-        fields = ("pk", "offer", "member", "is_admin", "is_member", "suggestions", )
+        fields = ("offer_id", "member_id", "member", "is_admin", "is_member",)
 
 
 class BaseOfferSerializer(serializers.ModelSerializer):
+    organizer = MemberSerializer(read_only=True)
+    organizer_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Offer
-        fields = ("pk", "title", "sub_title", "organizer", "is_finished", "is_canceled", "offer_members", )
+        fields = ("pk", "title", "sub_title", "organizer_id", "organizer", "is_finished", "is_canceled",
+                  "offer_members", "offer_suggestions",)
 
 
 class OfferSerializer(ModelDocument, BaseOfferSerializer):
     offer_members = MemberOfferSerializer(many=True)
-    suggestions = CustomField(initial=[], write_only=True,
-                              help_text='List of dictionaries containing datetime_from and datetime_to')
-
-    class Meta(BaseOfferSerializer.Meta):
-        fields = BaseOfferSerializer.Meta.fields + ('suggestions',)
 
     @transaction.atomic
     def create(self, validated_data):
         offer_members = validated_data.pop("offer_members")
-        suggestions = validated_data.pop("suggestions")
+        print(f"hallo {offer_members}")
+
+        offer_suggestions = validated_data.pop("offer_suggestions")
 
         instance = Offer.objects.create(**validated_data)
 
         organizer_offer_member_serializer = MemberOfferSerializer(
-            data={"member": instance.organizer.pk, "offer": instance.pk, "is_admin": True, "is_member": True})
+            data={"member_id": instance.organizer_id, "offer_id": instance.pk, "is_admin": True, "is_member": True}
+        )
 
         if organizer_offer_member_serializer.is_valid():
             organizer_offer_member_instance = organizer_offer_member_serializer.save()
         else:
             raise serializers.ValidationError(organizer_offer_member_serializer.errors)
+        print("???")
 
-        for suggestion in suggestions:
-            suggestion_serializer = SuggestionSerializer(
-                data={"member_offer": organizer_offer_member_instance.pk,
-                      "datetime_from": suggestion.get("datetime_from", None),
-                      "datetime_to": suggestion.get("datetime_to", None)})
-            if suggestion_serializer.is_valid():
-                suggestion_serializer.save()
-            else:
-                raise serializers.ValidationError(suggestion_serializer.errors)
-
+        print(f"lie: {offer_members}")
         for offer_member in offer_members:
-            member = getattr(offer_member.get("member", None), "pk", None)
+            member_id = offer_member.get("member_id", None)
+            print(f"!!! {member_id}")
             offer_member_serializer = MemberOfferSerializer(
-                data={"offer": instance.pk, "is_member": True, "member": member})
+                data={"offer_id": instance.pk, "is_member": True, "member_id": member_id})
 
             if offer_member_serializer.is_valid():
                 offer_member_serializer.save()
             else:
                 raise serializers.ValidationError(offer_member_serializer.errors)
 
-            member_suggestion_response_instance = MemberSuggestionResponseSerializer()
+        offer_suggestion_instances = []
+        for offer_suggestion in offer_suggestions:
+            offer_suggestion_serializer = SuggestionSerializer(
+                data={"member_id": organizer_offer_member_instance.member_id,
+                      "datetime_from": offer_suggestion.get("datetime_from", None),
+                      "datetime_to": offer_suggestion.get("datetime_to", None)}, context={"offer_id": instance.pk})
+            if offer_suggestion_serializer.is_valid():
+                offer_suggestion_instance = offer_suggestion_serializer.save()
+                offer_suggestion_instances.append(offer_suggestion_instance)
+            else:
+                raise serializers.ValidationError(offer_suggestion_serializer.errors)
+
+        print(offer_members)
+        for offer_suggestion_instance in offer_suggestion_instances:
+            for offer_member in offer_members:
+                member_id = offer_member.get("member_id", None)
+                print(f"why: {member_id} - {offer_suggestion_instance.id}")
+                member_suggestion_response_serializer = MemberSuggestionResponseSerializer(
+                    data={"member_id": member_id, "suggestion_id": offer_suggestion_instance.id})
+
+                if member_suggestion_response_serializer.is_valid():
+                    member_suggestion_response_serializer.save()
+                else:
+                    raise serializers.ValidationError(member_suggestion_response_serializer.errors)
         return instance
 
     @staticmethod

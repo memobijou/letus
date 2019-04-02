@@ -5,9 +5,11 @@ from django.db import models
 
 class Suggestion(models.Model):
     member_offer = models.ForeignKey(
-        "offer.MemberOffer", null=True, blank=False, on_delete=models.SET_NULL, related_name="suggestions")
+        "offer.MemberOffer", null=True, blank=False, on_delete=models.SET_NULL, related_name="member_suggestions")
     datetime_from = models.DateTimeField(null=True, blank=False, verbose_name="Zeitpunkt von")
     datetime_to = models.DateTimeField(null=True, blank=False, verbose_name="Zeitpunkt bis")
+    offer = models.ForeignKey("offer.Offer", null=True, blank=True, verbose_name="Angebot", on_delete=models.SET_NULL,
+                              related_name="offer_suggestions")
 
 
 class MemberSuggestionResponse(models.Model):
