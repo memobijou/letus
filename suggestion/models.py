@@ -15,8 +15,6 @@ class Suggestion(models.Model):
 class MemberSuggestionResponse(models.Model):
     member = models.ForeignKey(
         "member.Member", null=True, blank=False, on_delete=models.SET_NULL, related_name="responses")
-    suggestion = models.ForeignKey(
-        "suggestion.Suggestion", null=True, blank=True, verbose_name="Terminvorschlag", on_delete=models.SET_NULL,
-        related_name="responses"
-    )
+    suggestion = models.ForeignKey("suggestion.Suggestion", null=True, blank=True, verbose_name="Terminvorschlag",
+                                   on_delete=models.SET_NULL, related_name="responses")
     accepted = models.NullBooleanField(blank=True, verbose_name="Zustimmung")

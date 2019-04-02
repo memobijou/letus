@@ -20,6 +20,7 @@ class MemberOfferSerializer(serializers.ModelSerializer):
 class BaseOfferSerializer(serializers.ModelSerializer):
     organizer = MemberSerializer(read_only=True)
     organizer_id = serializers.IntegerField(write_only=True)
+    offer_suggestions = SuggestionSerializer(many=True)
 
     class Meta:
         model = Offer
@@ -33,8 +34,6 @@ class OfferSerializer(ModelDocument, BaseOfferSerializer):
     @transaction.atomic
     def create(self, validated_data):
         offer_members = validated_data.pop("offer_members")
-        print(f"hallo {offer_members}")
-
         offer_suggestions = validated_data.pop("offer_suggestions")
 
         instance = Offer.objects.create(**validated_data)
@@ -44,7 +43,7 @@ class OfferSerializer(ModelDocument, BaseOfferSerializer):
         )
 
         if organizer_offer_member_serializer.is_valid():
-            organizer_offer_member_instance = organizer_offer_member_serializer.save()
+            organizer_offer_member_serializer.save()
         else:
             raise serializers.ValidationError(organizer_offer_member_serializer.errors)
         print("???")
@@ -63,10 +62,11 @@ class OfferSerializer(ModelDocument, BaseOfferSerializer):
 
         offer_suggestion_instances = []
         for offer_suggestion in offer_suggestions:
+            print(f"Donald: {offer_suggestion}")
+            print(f"Trump: {instance.pk}")
             offer_suggestion_serializer = SuggestionSerializer(
-                data={"member_id": organizer_offer_member_instance.member_id,
-                      "datetime_from": offer_suggestion.get("datetime_from", None),
-                      "datetime_to": offer_suggestion.get("datetime_to", None)}, context={"offer_id": instance.pk})
+                data={"datetime_from": offer_suggestion.get("datetime_from", None),
+                      "datetime_to": offer_suggestion.get("datetime_to", None), "offer_id": instance.pk})
             if offer_suggestion_serializer.is_valid():
                 offer_suggestion_instance = offer_suggestion_serializer.save()
                 offer_suggestion_instances.append(offer_suggestion_instance)
@@ -75,6 +75,16 @@ class OfferSerializer(ModelDocument, BaseOfferSerializer):
 
         print(offer_members)
         for offer_suggestion_instance in offer_suggestion_instances:
+            organizers_member_suggestion_response_serializer = MemberSuggestionResponseSerializer(
+                data={"member_id": instance.organizer_id, "suggestion_id": offer_suggestion_instance.id,
+                      "accepted": True
+                      })
+
+            if organizers_member_suggestion_response_serializer.is_valid():
+                organizers_member_suggestion_response_serializer.save()
+            else:
+                raise serializers.ValidationError(organizers_member_suggestion_response_serializer.errors)
+
             for offer_member in offer_members:
                 member_id = offer_member.get("member_id", None)
                 print(f"why: {member_id} - {offer_suggestion_instance.id}")

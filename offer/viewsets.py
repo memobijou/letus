@@ -1,3 +1,4 @@
+from django.db.models import Prefetch, Q
 from rest_framework import mixins
 from offer.documents import offer_schema
 from offer.models import Offer
@@ -5,10 +6,15 @@ from offer.serializers import OfferSerializer
 from suggestion.models import Suggestion
 from suggestion.serializers import SuggestionSerializer
 from rest_framework.viewsets import GenericViewSet
+from django.db.models import Count, Case, When, IntegerField
 
 
 class OfferViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
-    queryset = Offer.objects.all()
+    queryset = Offer.objects.prefetch_related(Prefetch(
+        'offer_suggestions',
+        queryset=Suggestion.objects.annotate(
+            accepted_count=Count("responses__id", filter=Q(responses__accepted=True), distinct=True)
+        ).order_by('-accepted_count')))
     serializer_class = OfferSerializer
     schema = offer_schema
 
